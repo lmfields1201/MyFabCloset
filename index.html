@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wardrobe Builder Simulator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+        }
+        .closet-items::-webkit-scrollbar { width: 8px; }
+        .closet-items::-webkit-scrollbar-track { background: #e5e7eb; border-radius: 10px; }
+        .closet-items::-webkit-scrollbar-thumb { background: #9ca3af; border-radius: 10px; }
+        .closet-items::-webkit-scrollbar-thumb:hover { background: #6b7280; }
+        
+        .mannequin-slot {
+            transition: background-image 0.3s ease-in-out, background-color 0.3s ease-in-out;
+            background-size: contain;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+        .item-card {
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+        .item-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .item-card.selected {
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.4);
+        }
+        
+        .gallery-card {
+            height: 250px;
+            background-color: #fff;
+            position: relative;
+        }
+        .gallery-slot {
+            background-size: contain;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+
+        .view-toggle button {
+            transition: background-color 0.2s, color 0.2s;
+        }
+        .view-toggle button.active {
+            background-color: #4f46e5;
+            color: #ffffff;
+        }
+        .view-toggle button.inactive {
+            background-color: #e5e7eb;
+            color: #4b5563;
+        }
+    </style>
+</head>
+<body class="antialiased text-gray-800">
+
+    <div class="container mx-auto p-4 md:p-8 max-w-7xl">
+        <header class="text-center mb-8">
+            <h1 class="text-4xl md:text-5xl font-bold text-gray-900">Wardrobe Builder</h1>
+            <p class="text-lg text-gray-600 mt-2">Design your look and see others in the Live Fashion Show!</p>
+        </header>
+
+        <div class="flex justify-center mb-6 view-toggle bg-gray-200 p-1 rounded-lg max-w-sm mx-auto">
+            <button id="showBuilderBtn" class="w-1/2 py-2 px-4 rounded-md font-semibold active">Outfit Builder</button>
+            <button id="showGalleryBtn" class="w-1/2 py-2 px-4 rounded-md font-semibold inactive">Live Show</button>
+        </div>
+
+        <div id="main-content">
+            <!-- View 1: The Builder -->
+            <main id="builder-view" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div class="lg:col-span-1 bg-white p-6 rounded-2xl shadow-lg">
+                    <h2 class="text-2xl font-semibold mb-4 text-center">Your Outfit</h2>
+                    <div id="mannequin" class="relative w-full max-w-sm mx-auto h-[400px] md:h-[500px] bg-gray-200 rounded-lg flex flex-col items-center justify-center overflow-hidden">
+                        <div class="absolute inset-0">
+                            <div id="mannequin-tops" class="mannequin-slot absolute top-0 left-0 w-full h-1/2"></div>
+                            <div id="mannequin-bottoms" class="mannequin-slot absolute bottom-[25%] left-0 w-full h-1/2"></div>
+                            <div id="mannequin-shoes" class="mannequin-slot absolute bottom-0 left-0 w-full h-1/4"></div>
+                        </div>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-32 h-32 text-gray-400" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a5 5 0 1 0 5 5a5 5 0 0 0-5-5zm0 8a3 3 0 1 1 3-3a3 3 0 0 1-3 3zm9 11v-1a7 7 0 0 0-7-7h-4a7 7 0 0 0-7 7v1h2v-1a5 5 0 0 1 5-5h4a5 5 0 0 1 5 5v1z"/></svg>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4 mt-4 max-w-sm mx-auto">
+                        <div>
+                            <h3 class="text-sm font-semibold text-center text-gray-600 mb-1">Outerwear</h3>
+                            <div id="mannequin-outerwear" class="mannequin-slot relative w-full h-32 bg-gray-200 rounded-lg flex items-center justify-center">
+                                <span class="text-gray-400 text-xs p-2 text-center">Outerwear</span>
+                            </div>
+                        </div>
+                        <div>
+                            <h3 class="text-sm font-semibold text-center text-gray-600 mb-1">Accessory</h3>
+                            <div id="mannequin-accessories" class="mannequin-slot relative w-full h-32 bg-gray-200 rounded-lg flex items-center justify-center">
+                                 <span class="text-gray-400 text-xs p-2 text-center">Accessory</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-center space-x-4 mt-6">
+                        <button id="randomizeBtn" class="w-1/2 bg-gray-200 text-gray-800 font-semibold py-2 px-4 rounded-lg hover:bg-gray-300">Random</button>
+                        <button id="clearBtn" class="w-1/2 bg-gray-200 text-gray-800 font-semibold py-2 px-4 rounded-lg hover:bg-gray-300">Clear</button>
+                    </div>
+                     <button id="submitOutfitBtn" class="w-full bg-indigo-600 text-white font-semibold py-3 px-4 rounded-lg shadow-md hover:bg-indigo-700 mt-4">
+                        Publish to Fashion Show
+                    </button>
+                    <p id="submitStatus" class="text-center text-sm mt-2 text-indigo-600 font-medium"></p>
+                </div>
+
+                <div class="lg:col-span-2 bg-white p-6 rounded-2xl shadow-lg">
+                    <h2 class="text-2xl font-semibold mb-4 text-center">Your Closet</h2>
+                    <div id="closet" class="space-y-6"></div>
+                </div>
+            </main>
+
+            <!-- View 2: Live Show Gallery -->
+            <div id="gallery-view" class="hidden">
+                <div class="bg-white p-6 rounded-2xl shadow-lg">
+                    <h2 class="text-3xl font-semibold mb-6 text-center">Live Fashion Show</h2>
+                    <div id="fashion-show-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                        <!-- Outfits load here via Firestore -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, limit } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+
+        // Firebase Config
+        const firebaseConfig = JSON.parse(__firebase_config);
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'wardrobe-builder';
+
+        // --- DATABASE ---
+        const closetData = {
+            tops: [
+                { id: 1, name: '2025 Rollneck Sweater', imageUrl: 'https://i.postimg.cc/4YWnqWD3/2025-Rollneck-sweater-CM712.png' },
+                { id: 2, name: 'Cashmere Classic Crew', imageUrl: 'https://i.postimg.cc/9c4BkH7x/Cashmere-classic-fit-crewneck-sweater-BA400.png' },
+                { id: 3, name: 'Feather Jersey Turtleneck', imageUrl: 'https://i.postimg.cc/D7WcN3X6/Feather-jersey-turtleneck-CN176.png' },
+                { id: 4, name: 'Cotton Poplin Shirt', imageUrl: 'https://i.postimg.cc/fM3vPQ9B/Garcon-classic-shirt-in-cotton-poplin-BY716.png' },
+            ],
+            bottoms: [
+                { id: 1, name: 'Barrel Leg Jeans', imageUrl: 'https://i.postimg.cc/qpSNvzvG/Barrel-leg-jean-CK153.png' },
+                { id: 2, name: 'Black Cosmo Pant', imageUrl: 'https://i.postimg.cc/CwzZ0jSt/Cosmo-pant-in-luster-charmeuse-CN714-Black.png' },
+                { id: 3, name: 'Wide-Leg Wool Pant', imageUrl: 'https://i.postimg.cc/HTVJmQdN/Essential-wide-leg-pant-in-Italian-studio-wool-blend-CN722.png' },
+                { id: 4, name: 'Slip Skirt', imageUrl: 'https://i.postimg.cc/XWm61dDD/New-Gwyneth-slip-skirt-in-viscose-charmeuse-CI640.png' },
+            ],
+            shoes: [
+                { id: 1, name: 'Maison Tassel Loafers', imageUrl: 'https://i.postimg.cc/NBy36M45/Maison-tassel-loafers-in-leather-CM906.png' },
+                { id: 2, name: 'Leopard Ankle Boots', imageUrl: 'https://i.postimg.cc/PTLgWx4T/New-Stevie-ankle-boots-in-leopard-print-calf-hair-CM915.png' },
+                { id: 3, name: 'Leather Knee-High Boots', imageUrl: 'https://i.postimg.cc/5bHhB03d/New-Stevie-knee-high-boots-in-leather-CM917.png' },
+                { id: 4, name: 'Nike Killshot 2', imageUrl: 'https://i.postimg.cc/bpG7xJR4/Nike-Killshot-2-sneakers-CP794.png' },
+            ],
+            accessories: [
+                { id: 1, name: 'Gold Hoop Earrings', imageUrl: 'https://i.postimg.cc/p2nNggYw/Gold_vermeil_hoop_earrings_CN560.png' },
+                { id: 2, name: 'Chainlink Bracelet', imageUrl: 'https://i.postimg.cc/KZgXddDh/Metallic_chainlink_bracelet_BS720.png' },
+                { id: 3, name: 'Chainlink Necklace', imageUrl: 'https://i.postimg.cc/F9Jt22Vt/Metallic_chainlink_necklace_BS719.png' },
+                { id: 4, name: 'Cashmere Beanie', imageUrl: 'https://i.postimg.cc/5xFcZZSd/Ribbed_cashmere_beanie_CE240.png' },
+            ],
+            outerwear: [
+                { id: 1, name: 'Icon Trench Coat', imageUrl: 'https://i.postimg.cc/4G8Qhm6h/New_Icon_trench_coat_BF456.png' },
+                { id: 2, name: 'Classic Denim Jacket', imageUrl: 'https://i.postimg.cc/Mwsmjv7Q/New_classic_denim_jacket_in_Alicia_wash_BY013.png' },
+                { id: 3, name: 'Chiara Topcoat', imageUrl: 'https://i.postimg.cc/hKdpgg67/Chiara-topcoat-in-Italian-double-face-CN071.png' },
+            ]
+        };
+
+        let currentOutfit = { tops: null, bottoms: null, shoes: null, accessories: null, outerwear: null };
+        let currentUser = null;
+
+        // Initialize Auth
+        const initAuth = async () => {
+            await signInAnonymously(auth);
+            onAuthStateChanged(auth, (user) => {
+                currentUser = user;
+                if (user) {
+                    setupGalleryListener();
+                }
+            });
+        };
+        initAuth();
+
+        // UI Elements
+        const closetElement = document.getElementById('closet');
+        const showBuilderBtn = document.getElementById('showBuilderBtn');
+        const showGalleryBtn = document.getElementById('showGalleryBtn');
+        const builderView = document.getElementById('builder-view');
+        const galleryView = document.getElementById('gallery-view');
+        const mannequinIcon = document.querySelector('#mannequin svg');
+        const fashionShowGrid = document.getElementById('fashion-show-grid');
+        const submitStatus = document.getElementById('submitStatus');
+
+        function renderCloset() {
+            closetElement.innerHTML = '';
+            for (const category in closetData) {
+                const categoryContainer = document.createElement('div');
+                categoryContainer.innerHTML = `<h3 class="text-xl font-semibold capitalize text-gray-700 border-b-2 border-gray-200 pb-2 mb-4">${category}</h3>`;
+                const itemsGrid = document.createElement('div');
+                itemsGrid.className = 'grid grid-cols-2 sm:grid-cols-4 gap-4';
+
+                closetData[category].forEach(item => {
+                    const card = document.createElement('div');
+                    card.className = 'item-card cursor-pointer border-2 border-transparent bg-gray-100 p-2 rounded-lg text-center';
+                    card.dataset.category = category;
+                    card.dataset.id = item.id;
+                    card.innerHTML = `
+                        <img src="${item.imageUrl}" class="w-full h-24 object-contain mb-2">
+                        <p class="text-xs font-medium text-gray-700">${item.name}</p>
+                    `;
+                    card.onclick = () => selectItem(category, item.id);
+                    itemsGrid.appendChild(card);
+                });
+                categoryContainer.appendChild(itemsGrid);
+                closetElement.appendChild(categoryContainer);
+            }
+        }
+
+        function selectItem(category, itemId) {
+            const item = closetData[category].find(i => i.id === itemId);
+            currentOutfit[category] = (currentOutfit[category]?.id === itemId) ? null : item;
+            updateUI();
+        }
+
+        function updateUI() {
+            let empty = true;
+            for (const cat in currentOutfit) {
+                const slot = document.getElementById(`mannequin-${cat}`);
+                if (!slot) continue;
+                if (currentOutfit[cat]) {
+                    slot.style.backgroundImage = `url(${currentOutfit[cat].imageUrl})`;
+                    if (['tops', 'bottoms', 'shoes'].includes(cat)) empty = false;
+                    if (slot.querySelector('span')) slot.querySelector('span').style.opacity = '0';
+                } else {
+                    slot.style.backgroundImage = 'none';
+                    if (slot.querySelector('span')) slot.querySelector('span').style.opacity = '1';
+                }
+            }
+            mannequinIcon.style.display = empty ? 'block' : 'none';
+            document.querySelectorAll('.item-card').forEach(card => {
+                const cat = card.dataset.category;
+                const id = parseInt(card.dataset.id);
+                card.classList.toggle('selected', currentOutfit[cat]?.id === id);
+            });
+        }
+
+        // Firestore Logic
+        async function submitOutfit() {
+            if (!currentUser) return;
+            const hasItems = Object.values(currentOutfit).some(v => v !== null);
+            if (!hasItems) {
+                submitStatus.textContent = "Please select at least one item!";
+                return;
+            }
+
+            submitStatus.textContent = "Publishing...";
+            try {
+                const outfitPayload = {
+                    creator: currentUser.uid,
+                    timestamp: Date.now(),
+                    items: {
+                        tops: currentOutfit.tops?.id || 0,
+                        bottoms: currentOutfit.bottoms?.id || 0,
+                        shoes: currentOutfit.shoes?.id || 0,
+                        accessories: currentOutfit.accessories?.id || 0,
+                        outerwear: currentOutfit.outerwear?.id || 0
+                    }
+                };
+
+                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'outfits'), outfitPayload);
+                submitStatus.textContent = "Success! Check the Live Show.";
+                setTimeout(() => submitStatus.textContent = "", 3000);
+            } catch (e) {
+                submitStatus.textContent = "Error saving outfit.";
+            }
+        }
+
+        function setupGalleryListener() {
+            const q = query(collection(db, 'artifacts', appId, 'public', 'data', 'outfits'));
+            onSnapshot(q, (snapshot) => {
+                fashionShowGrid.innerHTML = '';
+                snapshot.docs.forEach(doc => {
+                    const data = doc.data();
+                    renderGalleryItem(data.items);
+                });
+            }, (error) => console.error("Gallery Error:", error));
+        }
+
+        function renderGalleryItem(itemIds) {
+            const card = document.createElement('div');
+            card.className = 'gallery-card rounded-xl shadow-lg border border-gray-100 overflow-hidden';
+            
+            const findItem = (cat, id) => closetData[cat].find(i => i.id === id);
+            
+            const layers = [
+                { cat: 'tops', h: 'h-1/2', t: 'top-0' },
+                { cat: 'bottoms', h: 'h-1/2', t: 'bottom-[25%]' },
+                { cat: 'shoes', h: 'h-1/4', t: 'bottom-0' },
+                { cat: 'outerwear', h: 'h-1/2', t: 'top-0' },
+                { cat: 'accessories', h: 'h-1/4', t: 'top-[-5%]' }
+            ];
+
+            layers.forEach(l => {
+                const item = findItem(l.cat, itemIds[l.cat]);
+                if (item) {
+                    const div = document.createElement('div');
+                    div.className = `gallery-slot absolute left-0 w-full ${l.h} ${l.t}`;
+                    div.style.backgroundImage = `url(${item.imageUrl})`;
+                    card.appendChild(div);
+                }
+            });
+
+            fashionShowGrid.appendChild(card);
+        }
+
+        // Controls
+        document.getElementById('randomizeBtn').onclick = () => {
+            for (const cat in closetData) {
+                currentOutfit[cat] = closetData[cat][Math.floor(Math.random() * closetData[cat].length)];
+            }
+            updateUI();
+        };
+
+        document.getElementById('clearBtn').onclick = () => {
+            for (const cat in currentOutfit) currentOutfit[cat] = null;
+            updateUI();
+        };
+
+        document.getElementById('submitOutfitBtn').onclick = submitOutfit;
+
+        showBuilderBtn.onclick = () => {
+            builderView.style.display = 'grid';
+            galleryView.style.display = 'none';
+            showBuilderBtn.className = 'w-1/2 py-2 px-4 rounded-md font-semibold active';
+            showGalleryBtn.className = 'w-1/2 py-2 px-4 rounded-md font-semibold inactive';
+        };
+
+        showGalleryBtn.onclick = () => {
+            builderView.style.display = 'none';
+            galleryView.style.display = 'block';
+            showBuilderBtn.className = 'w-1/2 py-2 px-4 rounded-md font-semibold inactive';
+            showGalleryBtn.className = 'w-1/2 py-2 px-4 rounded-md font-semibold active';
+        };
+
+        renderCloset();
+    </script>
+</body>
+</html>
