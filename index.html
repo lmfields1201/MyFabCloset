@@ -1760,22 +1760,6 @@
   }
 };
 
-                        const itemName = document.createElement('p');
-                        itemName.className = 'text-sm font-medium text-gray-700';
-                        itemName.textContent = item.name;
-
-                        itemCard.appendChild(itemImg);
-                        itemCard.appendChild(itemName);
-                        itemsGrid.appendChild(itemCard);
-
-                        itemCard.addEventListener('click', () => selectItem(category, item.id));
-                    });
-
-                    categoryContainer.appendChild(itemsGrid);
-                    closetElement.appendChild(categoryContainer);
-                }
-            }
-            
             function selectItem(category, itemId) {
                 const selectedItem = closetData[category].find(item => item.id === itemId);
                 
