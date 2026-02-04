@@ -1761,6 +1761,18 @@
   }
 };
 
+      itemCard.appendChild(itemImg);
+      itemCard.appendChild(itemName);
+      itemsList.appendChild(itemCard);
+
+      itemCard.addEventListener('click', () => selectItem(category, item.id));
+    });
+
+    categoryContainer.appendChild(itemsList);
+    closetElement.appendChild(categoryContainer);
+  }
+};
+
             
             function selectItem(category, itemId) {
                 const selectedItem = closetData[category].find(item => item.id === itemId);
