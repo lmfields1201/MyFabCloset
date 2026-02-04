@@ -636,7 +636,7 @@
                 <!-- Right Side: Closet/Wardrobe -->
                 <div class="lg:col-span-2 bg-white p-6 rounded-2xl shadow-lg">
                     <h2 class="text-2xl font-semibold mb-4 text-center">My Fabulous Closet</h2>
-                    <div id="closet" class="space-y-6">
+                    <div id="closet" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 items-start">
                         <!-- Categories will be injected here by JavaScript -->
                     </div>
                 </div>
@@ -1709,14 +1709,15 @@
                 closetElement.innerHTML = '';
                 for (const category in closetData) {
                     const categoryContainer = document.createElement('div');
-                    
+                    categoryContainer.className = 'bg-white border border-gray-200 rounded-2xl p-3 flex flex-col h-[70vh]';
+
                     const categoryTitle = document.createElement('h3');
                     categoryTitle.className = 'text-xl font-semibold capitalize text-gray-700 border-b-2 border-gray-200 pb-2 mb-4';
                     categoryTitle.textContent = category;
                     categoryContainer.appendChild(categoryTitle);
 
                     const itemsGrid = document.createElement('div');
-                    itemsGrid.className = 'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4';
+                    itemsGrid.className = 'flex-1 overflow-y-auto pr-1 space-y-3 snap-y snap-mandatory';
 
                     closetData[category].forEach(item => {
                         const itemCard = document.createElement('div');
